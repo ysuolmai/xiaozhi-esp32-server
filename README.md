@@ -1,4 +1,4 @@
-[![Banners](docs/images/banner1.png)](https://github.com/xinnan-tech/xiaozhi-esp32-server)
+[![Banners](docs/images/banner1.png)](https://github.com/ysuolmai/xiaozhi-esp32-server)
 
 <h1 align="center">小智后端服务xiaozhi-esp32-server</h1>
 
@@ -11,8 +11,9 @@
 
 <p align="center">
 <a href="./docs/FAQ.md">常见问题</a>
-· <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/issues">反馈问题</a>
+· <a href="https://github.com/ysuolmai/xiaozhi-esp32-server/pkgs/container/xiaozhi-esp32-server">ARM64镜像</a>
 · <a href="./README.md#%E9%83%A8%E7%BD%B2%E6%96%87%E6%A1%A3">部署文档</a>
+· <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server">上游项目</a>
 · <a href="https://github.com/xinnan-tech/xiaozhi-esp32-server/releases">更新日志</a>
 </p>
 
@@ -40,6 +41,25 @@ Spearheaded by Professor Siyuan Liu's Team (South China University of Technology
 </br>
 <img src="./docs/images/hnlg.jpg" alt="华南理工大学" width="50%">
 </p>
+
+---
+
+## 本 Fork 说明
+
+本仓库基于上游项目 [xinnan-tech/xiaozhi-esp32-server](https://github.com/xinnan-tech/xiaozhi-esp32-server)，主要补充了可直接用于 `linux/arm64` 服务器的 GHCR Docker 镜像构建与部署配置。
+
+GitHub Actions 会通过 `Build ARM64 Docker Images` 工作流自动构建并推送以下镜像：
+
+| 镜像 | 用途 | 部署时是否直接使用 |
+|:---|:---|:---:|
+| `ghcr.io/ysuolmai/xiaozhi-esp32-server:server_latest` | Python Server 服务，提供 WebSocket 和 OTA/HTTP 接口 | 是 |
+| `ghcr.io/ysuolmai/xiaozhi-esp32-server:web_latest` | 智控台、manager-api 和 manager-web | 全模块安装时使用 |
+| `ghcr.io/ysuolmai/xiaozhi-esp32-server:server-base` | 构建 `server_latest` 的 ARM64 基础镜像 | 否 |
+
+镜像页面：
+[ghcr.io/ysuolmai/xiaozhi-esp32-server](https://github.com/ysuolmai/xiaozhi-esp32-server/pkgs/container/xiaozhi-esp32-server)
+
+如果服务器拉取 GHCR 镜像时提示无权限，请先确认该 Package 已设为 `Public`；如果保持私有，则需要在服务器上执行 `docker login ghcr.io` 后再拉取。
 
 ---
 
@@ -165,6 +185,73 @@ Spearheaded by Professor Siyuan Liu's Team (South China University of Technology
 ![Banners](docs/images/banner2.png)
 
 本项目提供两种部署方式，请根据您的具体需求选择：
+
+### ARM64 Docker 快速选择
+
+本 fork 的 Docker Compose 文件已经改为使用 `ysuolmai` 的 GHCR 镜像：
+
+```text
+ghcr.io/ysuolmai/xiaozhi-esp32-server:server_latest
+ghcr.io/ysuolmai/xiaozhi-esp32-server:web_latest
+```
+
+#### 最简化安装
+
+只运行 Server，适合不需要智控台、不需要 MySQL/Redis 的轻量部署。
+
+使用文件：
+
+```text
+main/xiaozhi-server/docker-compose.yml
+```
+
+会使用的镜像：
+
+```text
+ghcr.io/ysuolmai/xiaozhi-esp32-server:server_latest
+```
+
+启动命令：
+
+```bash
+cd main/xiaozhi-server
+docker compose -f docker-compose.yml pull
+docker compose -f docker-compose.yml up -d
+```
+
+#### 全模块安装
+
+运行 Server、智控台、manager-api、MySQL 和 Redis，适合完整功能体验。
+
+使用文件：
+
+```text
+main/xiaozhi-server/docker-compose_all.yml
+```
+
+会使用的业务镜像：
+
+```text
+ghcr.io/ysuolmai/xiaozhi-esp32-server:server_latest
+ghcr.io/ysuolmai/xiaozhi-esp32-server:web_latest
+```
+
+同时还会拉取官方依赖镜像：
+
+```text
+mysql:latest
+redis:8.0
+```
+
+启动命令：
+
+```bash
+cd main/xiaozhi-server
+docker compose -f docker-compose_all.yml pull
+docker compose -f docker-compose_all.yml up -d
+```
+
+更新镜像时重新执行 `docker compose pull` 和 `docker compose up -d` 即可。
 
 #### 🚀 部署方式选择
 | 部署方式 | 特点 | 适用场景 | 部署文档 | 配置要求 | 视频教程 | 
